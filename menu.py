@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 #	Copyright 2015 Michał Nieznański
 #
@@ -29,7 +29,7 @@ from os import system, listdir
 
 class Controls(QWidget):
     def __init__(self):
-        super().__init__()
+        super(Controls, self).__init__()
         # 0 - key action
         # 1 - bool setting
         self.boards = [1, 2]
@@ -116,7 +116,7 @@ class Controls(QWidget):
 
 class Menu(QWidget):
     def __init__(self):
-        super().__init__()
+        super(Menu, self).__init__()
 
         self.initUI()
 
