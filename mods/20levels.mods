@@ -1,0 +1,8 @@
+game_turn_time:1.0
+end_time_increase:0.5
+red_block_reward:0.04
+turn_time_decrease:0.83
+defill_time_decrease:1
+troll_time_decrease:0
+win_functions:1
+loss_functions:1
