@@ -22,10 +22,64 @@ import PyQt5
 from PyQt5.QtWidgets import (QApplication, QWidget,
         QPushButton, QToolTip, QMessageBox, 
         QVBoxLayout, QComboBox, QLabel,
-        QLineEdit)
+        QLineEdit, QCheckBox)
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import QCoreApplication
 from os import system, listdir
+
+class Resolution(QWidget):
+    """
+    Widget for setting the resolution
+    """
+    def __init__(self):
+        super(Resolution, self).__init__()
+        self.width = 0
+        self.height = 0
+        self.fullscreen = True
+        self.initUI()
+        self.hide()
+    def initUI(self):
+        vbox = QVBoxLayout(self)
+        self.width_line = QLineEdit("0", self)
+        self.width_line.setToolTip("Width")
+        self.height_line = QLineEdit("0", self)
+        self.height_line.setToolTip("Height")
+        self.fullscreen_box = QCheckBox("Fullscreen", self)
+        self.fullscreen_box.setTristate(False)
+        self.fullscreen_box.setChecked(True)
+        vbox.addWidget(self.width_line)
+        vbox.addWidget(self.height_line)
+        vbox.addWidget(self.fullscreen_box)
+    def validate_lines(self):
+        states = []
+        for line in [self.width_line, self.height_line]:
+            text = line.text()
+            if text.isdigit():
+                if int(text) >= 0:
+                    line.setStyleSheet("QLineEdit {background: rgb(210, 255, 210)}")
+                    states.append(0)
+                else:
+                    states.append(1)
+                    line.setStyleSheet("QLineEdit {background: rgb(255, 210, 210)}")
+            else:
+                states.append(2)
+                line.setStyleSheet("QLineEdit {background: rgb(255, 210, 210)}")
+        if states.count(0) == len(states):
+            return True
+        else:
+            return False
+
+    def set_values(self):
+        self.width = int(self.width_line.text())
+        self.height = int(self.height_line.text())
+        self.fullscreen = self.fullscreen_box.isChecked()
+    def __call__(self):
+        if self.isVisible():
+            if self.validate_lines():
+                self.set_values()
+                self.hide()
+        else:
+            self.show()
 
 class Controls(QWidget):
     """
@@ -140,28 +194,28 @@ class Menu(QWidget):
     def __init__(self):
         super(Menu, self).__init__()
 
+        self.joy = 1
+        self.conf = "config0.conf"
+        self.mod = "20levels.mods"
+        self.ai = "0"
+
         self.initUI()
 
     def initUI(self):
         QToolTip.setFont(QFont("SansSerif", 10))
         vbox = QVBoxLayout(self)
         configbox = QComboBox(self)
+        configbox.setToolTip("Configuration file")
+
         for f in listdir("./config"):
             if f[-4:] == "conf":
                 configbox.addItem(f)
                 configbox.activated[str].connect(self.set_config)
-        ai_del_label = QLabel("AI Delay", self)
         self.ai_delay = QComboBox(self)
         for i in range(1,4):
             self.ai_delay.addItem(str(i))
+        self.ai_delay.setToolTip("AI Delay")
 
-        self.joy = 1
-        self.fullscreen = 1
-        self.width = 0
-        self.height = 0
-        self.conf = "config0.conf"
-        self.mod = "20levels.mods"
-        self.ai = "0"
 
         btn_pl_vs_pl = QPushButton("PL VS PL", self)
         btn_pl_vs_pl.clicked.connect(self.pl_vs_pl)
@@ -189,7 +243,10 @@ class Menu(QWidget):
         btn_toggle_controls.setToolTip("-fill all settings\n-new config is available at tmp_config.conf")
         btn_toggle_controls.clicked.connect(controls)
 
-
+        self.resolution = Resolution()
+        btn_toggle_resolution = QPushButton("SET RESOLUTION", self)
+        btn_toggle_resolution.setToolTip("-set the game resolution")
+        btn_toggle_resolution.clicked.connect(self.resolution)
 
         vbox.addWidget(btn_pl_vs_pl)
         vbox.addWidget(btn_pl_vs_pl_mod)
@@ -199,8 +256,9 @@ class Menu(QWidget):
         vbox.addWidget(btn_toggle_controls)
         vbox.addWidget(controls)
         vbox.addWidget(configbox)
-        vbox.addWidget(ai_del_label)
         vbox.addWidget(self.ai_delay)
+        vbox.addWidget(btn_toggle_resolution)
+        vbox.addWidget(self.resolution)
 
         self.setGeometry(300, 300, 300, 100)
         self.setWindowTitle("Menu")
@@ -231,9 +289,10 @@ class Menu(QWidget):
         self.conf = text
     def option_str(self):
         opt = ""
-        optlist = [self.joy, self.fullscreen,
-                    self.width, self.height, self.conf,
-                    self.mod, self.ai, self.ai_delay.currentText()]
+        optlist = [self.joy, int(self.resolution.fullscreen),
+                    self.resolution.width, self.resolution.height,
+                    self.conf, self.mod, self.ai,
+                    self.ai_delay.currentText()]
         for i in optlist:
             opt += " "
             opt += str(i)
