@@ -28,11 +28,15 @@ from PyQt5.QtCore import QCoreApplication
 from os import system, listdir
 
 class Controls(QWidget):
+    """
+    Widget for setting the controlls
+    """
     def __init__(self):
         super(Controls, self).__init__()
         # 0 - key action
         # 1 - bool setting
         self.boards = [1, 2]
+        self.next_setting = True
         self.settings = [
                 ["ml", 0],
                 ["mr", 0],
@@ -60,23 +64,21 @@ class Controls(QWidget):
                 }
         self.current_board = 0
         self.current_setting = 0
-        self.initActions()
         self.initUI()
 
     def initUI(self):
         vbox = QVBoxLayout(self)
-        self.label = QLabel("HUE?", self)
         self.line = QLineEdit("HUQ", self)
+        self.line.setToolTip("Press a key to assign to an action\nor (y/n) in case of a boolean.")
+        self.one_more = QPushButton("ONE MORE", self)
+        self.one_more.setToolTip("Set the current setting once again.")
+        self.one_more.clicked.connect(self.stop_settings)
         self.input_prompt()
         self.line.keyPressEvent = self.keyPressEvent
-        vbox.addWidget(self.label)
         vbox.addWidget(self.line)
+        vbox.addWidget(self.one_more)
         self.hide()
 
-    def initActions(self):
-        for b in self.boards:
-            for s in self.settings:
-                self.actions.append([b, s[0], s[1], 0])
 
     def __call__(self):
         self.hide() if self.isVisible() else self.show()
@@ -85,15 +87,23 @@ class Controls(QWidget):
         key = e.nativeVirtualKey()
         if key in self.conversion:
             key = self.conversion[key]
-        self.actions[self.current_board*len(self.settings) + self.current_setting][3] = key
-        self.current_setting += 1
-        if self.current_setting >= len(self.settings):
-            self.current_setting = 0
-            self.current_board += 1
-            if self.current_board >= len(self.boards):
-                self.current_board = 0
-                self.finalize()
-        self.input_prompt()
+        self.actions.append([
+            self.boards[self.current_board],
+            self.settings[self.current_setting][0],
+            self.settings[self.current_setting][1],
+            key])
+
+        if self.next_setting:
+            self.current_setting += 1
+            if self.current_setting >= len(self.settings):
+                self.current_setting = 0
+                self.current_board += 1
+                if self.current_board >= len(self.boards):
+                    self.current_board = 0
+                    self.finalize()
+            self.input_prompt()
+        else:
+            self.next_setting = True
 
     def finalize(self):
         f = open("config/tmp_config.conf", "w")
@@ -103,6 +113,7 @@ class Controls(QWidget):
             elif key == 121:
                 f.write("".join([str(board), ":", action, "\n"]))
         f.close()
+        self.actions = []
         self.hide()
 
     def input_prompt(self):
@@ -113,8 +124,13 @@ class Controls(QWidget):
                 self.boards[self.current_board],
                 self.settings[self.current_setting][0],
                 hint))
+    def stop_settings(self):
+        self.next_setting = False
 
 class Menu(QWidget):
+    """
+    Tetroll Menu
+    """
     def __init__(self):
         super(Menu, self).__init__()
 
