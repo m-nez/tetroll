@@ -103,7 +103,7 @@ class Controls(QWidget):
                     self.finalize()
             self.input_prompt()
         else:
-            self.next_setting = True
+            self.restart_settings()
 
     def finalize(self):
         f = open("config/tmp_config.conf", "w")
@@ -124,8 +124,14 @@ class Controls(QWidget):
                 self.boards[self.current_board],
                 self.settings[self.current_setting][0],
                 hint))
+
     def stop_settings(self):
         self.next_setting = False
+        self.line.setStyleSheet("QLineEdit {background: rgb(200, 200, 255)}")
+
+    def restart_settings(self):
+        self.next_setting = True
+        self.line.setStyleSheet("QLineEdit {background: white}")
 
 class Menu(QWidget):
     """
