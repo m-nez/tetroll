@@ -8,7 +8,7 @@
 #   the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Foobar is distributed in the hope that it will be useful,
+#   Tetroll is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
@@ -22,8 +22,6 @@ class block:
         self.cur_sqares = [[0,0],[0,0],[0,0],[0,0]]
         self.col_sqares = [[0,0],[0,0],[0,0],[0,0]]
 
-        self.sin = [0, 1, 0, -1]
-        self.cos = [1, 0, -1, 0]
         self.rotation = 0
         self.colour = 1
     def I(self):

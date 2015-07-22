@@ -9,7 +9,7 @@
 #   the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Foobar is distributed in the hope that it will be useful,
+#   Tetroll is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
@@ -41,9 +41,9 @@ class Resolution(QWidget):
     def initUI(self):
         vbox = QVBoxLayout(self)
         self.width_line = QLineEdit("0", self)
-        self.width_line.setToolTip("Width")
+        self.width_line.setToolTip("Width (0 is your screen resolution)")
         self.height_line = QLineEdit("0", self)
-        self.height_line.setToolTip("Height")
+        self.height_line.setToolTip("Height (0 is your screen resolution)")
         self.fullscreen_box = QCheckBox("Fullscreen", self)
         self.fullscreen_box.setTristate(False)
         self.fullscreen_box.setChecked(True)

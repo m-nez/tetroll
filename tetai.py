@@ -9,7 +9,7 @@
 #   the Free Software Foundation, either version 3 of the License, or
 #   (at your option) any later version.
 #
-#   Foobar is distributed in the hope that it will be useful,
+#   Tetroll is distributed in the hope that it will be useful,
 #   but WITHOUT ANY WARRANTY; without even the implied warranty of
 #   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #   GNU General Public License for more details.
@@ -35,6 +35,7 @@ class AI:
         self.min_points = 0
         self.move_choice = []
         self.update()
+        #All possible 2 move combinations
         self.op2func = [
             self.mvp0rp0,
             self.mvm1rm1,
@@ -119,19 +120,17 @@ class AI:
     def mvp0rp0(self):
         pass
 
-    def set_sim_depth(self,d):
+    def set_sim_depth(self, d):
         self.sim_depth = d
     def set_turns_per_advance(self, t):
         self.turns_per_advance = t
     def update(self):
         self.block = deepcopy(self.bo.active_block)
-        pass
     def move(self):
         block_backup = deepcopy(self.bo.active_block)
         pos_backup = deepcopy(self.bo.pos)
         block = deepcopy(self.bo.active_block)
         self.bo.active_block = block
-        #mv = self.simulate2turn(1, self.advance_in)
         mv = self.simulate2turn_check_space(1, self.advance_in)
         self.bo.active_block = block_backup
         self.bo.pos = pos_backup
@@ -142,74 +141,6 @@ class AI:
         if self.advance_in == 0:
             self.bo.advance_turn()
             self.advance_in = self.turns_per_advance
-
-    def simulate2(self, depth, adv_in):
-        rotation = self.bo.active_block.rotation
-        pos = deepcopy(self.bo.pos)
-        c_sq = deepcopy(self.bo.active_block.cur_sqares)
-        pre_adv_in = adv_in
-        turn_vals = []
-
-        for func in [self.bo.try_move, self.bo.try_rotate]:
-            for val in [-1, 0, 1]:
-                self.bo.active_block.rotation = rotation
-                self.bo.pos = deepcopy(pos)
-                self.bo.active_block.cur_sqares = deepcopy(c_sq)
-                func(val)
-                landed = False
-                adv_in = pre_adv_in
-                levels_cleared = 0
-                adv_in -= 1
-                if adv_in == 0:
-                    adv_in = self.turns_per_advance
-                    landed, levels_cleared = self.bo.dry_advance()
-                if landed:
-                    points = self.evaluate(self.bo.pos, self.bo.active_block.cur_sqares, levels_cleared)
-                    turn_vals.append(points)
-                elif depth == self.sim_depth:
-                    points = self.evaluate(self.bo.pos, self.bo.active_block.cur_sqares, levels_cleared)
-                    turn_vals.append(points)
-                else:
-                    turn_vals.append(self.simulate2(depth + 1, adv_in))
-        if depth == 1:
-            return turn_vals.index(min(turn_vals))
-        else:
-            return min(turn_vals)
-
-
-    def simulate2turn(self, depth, adv_in):
-        rotation = self.bo.active_block.rotation
-        pos = deepcopy(self.bo.pos)
-        c_sq = deepcopy(self.bo.active_block.cur_sqares)
-        pre_adv_in = adv_in
-        turn_vals = []
-
-        for func in self.op2func:
-            self.bo.active_block.rotation = rotation
-            self.bo.pos = deepcopy(pos)
-            self.bo.active_block.cur_sqares = deepcopy(c_sq)
-            func()
-            landed = False
-            adv_in = pre_adv_in
-            levels_cleared = 0
-            adv_in -= 1
-            if adv_in == 0:
-                adv_in = self.turns_per_advance
-                landed, levels_cleared = self.bo.dry_advance()
-            if landed:
-                points = self.evaluate(self.bo.pos, self.bo.active_block.cur_sqares, levels_cleared)
-                turn_vals.append(points)
-            elif depth == self.sim_depth:
-                points = self.evaluate(self.bo.pos, self.bo.active_block.cur_sqares, levels_cleared)
-                turn_vals.append(points)
-            else:
-                turn_vals.append(self.simulate2turn(depth + 1, adv_in))
-        if depth == 1:
-            m = min(turn_vals)
-            return turn_vals.index(m)
-        else:
-            return min(turn_vals)
-
 
     def simulate2turn_check_space(self, depth, adv_in):
         rotation = self.bo.active_block.rotation
@@ -243,15 +174,7 @@ class AI:
         else:
             return min(turn_vals)
 
-    def evaluate(self, pos, sqares, levels):
-        points = 4 * pos[1]
-        for sq in sqares:
-            points += sq[1]
-        points -= 20 * levels
-        return points
-
     def evaluate_check_space(self, pos, sqares, levels, mat):
-        #Space to check
         space_to_check = [
                 [0, -1], [-1, 0]
                 ]
