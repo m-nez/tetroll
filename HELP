@@ -1,0 +1,18 @@
+1.Default controlls:
+exit - ESC
+Player 1:
+move left - A
+move right - D
+move down - S
+rotate left - Q
+rotate left - W
+rotate right - E
+drop block - L_SHIFT
+Player 2:
+move left - J
+move right - L
+move down - K
+rotate left - U
+rotate left - I
+rotate right - O
+drop block - R_SHIFT
