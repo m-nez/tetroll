@@ -1,18 +1,51 @@
 1.Default controlls:
-exit - ESC
-Player 1:
-move left - A
-move right - D
-move down - S
-rotate left - Q
-rotate left - W
-rotate right - E
-drop block - L_SHIFT
-Player 2:
-move left - J
-move right - L
-move down - K
-rotate left - U
-rotate left - I
-rotate right - O
-drop block - R_SHIFT
+		exit - ESC
+	Player 1:
+		move left - A
+		move right - D
+		move down - S
+		rotate left - Q
+		rotate left - W
+		rotate right - E
+		drop block - L_SHIFT
+	Player 2:
+		move left - J
+		move right - L
+		move down - K
+		rotate left - U
+		rotate left - I
+		rotate right - O
+		drop block - R_SHIFT
+2.Running from command line:
+	All arguments are positional
+	./tetroll
+		joystick (1, 2)
+		fullscreen (0, 1)
+		width ( >= 0)
+		height ( >= 0)
+		config (config0.conf, config1.conf, tmp_config.conf)
+		mod (3fill.mods, 20levels.mods, 20levels_trolltime.mods)
+		AI (0, 1 ,2)
+	examples:
+		./tetroll.py
+			Runs with default settings 600x600 resolution,
+			first player to get 21 lines wins,
+			don't fill up 3 times
+		./tetroll 2 1 0 0
+			Player 2 gets the joystick support,
+			Fullscreen with defult width and height
+		./tetroll 2 1 0 0 config1.conf
+			Player 2 gets the joystick support,
+			Fullscreen with defult width and height,
+			Different controlls
+		./tetroll 2 1 0 0 config1.conf 3fill.mods
+			Player 2 gets the joystick support,
+			Fullscreen with defult width and height,
+			Different controlls,
+			Different wining conditions
+		./tetroll 2 1 0 0 config1.conf 3fill.mods 1
+			Player 2 gets the joystick support,
+			Fullscreen with defult width and height,
+			Different controlls,
+			Different wining conditions,
+			One of the players is an AI
