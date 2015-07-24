@@ -7,4 +7,10 @@ Block-placing trolling game for 2 players
 -python2-pygame
 
 #Running
--run menu.py
+For a GUI.
+-./menu.py  
+  
+You can also run straight from the command line.  
+That way you don't need pyqt5.
+Documentation for that is located in the HELP file.
+-./tetroll
