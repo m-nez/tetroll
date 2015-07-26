@@ -195,7 +195,6 @@ class Menu(QWidget):
         super(Menu, self).__init__()
 
         self.joy = 1
-        self.conf = "config0.conf"
         self.mod = "20levels.mods"
         self.ai = "0"
 
@@ -204,13 +203,12 @@ class Menu(QWidget):
     def initUI(self):
         QToolTip.setFont(QFont("SansSerif", 10))
         vbox = QVBoxLayout(self)
-        configbox = QComboBox(self)
-        configbox.setToolTip("Configuration file")
+        self.configbox = QComboBox(self)
+        self.configbox.setToolTip("Configuration file")
 
         for f in listdir("./config"):
             if f[-4:] == "conf":
-                configbox.addItem(f)
-                configbox.activated[str].connect(self.set_config)
+                self.configbox.addItem(f)
         self.ai_delay = QComboBox(self)
         for i in range(1,4):
             self.ai_delay.addItem(str(i))
@@ -255,7 +253,7 @@ class Menu(QWidget):
         vbox.addWidget(btn_ai_vs_ai)
         vbox.addWidget(btn_toggle_controls)
         vbox.addWidget(controls)
-        vbox.addWidget(configbox)
+        vbox.addWidget(self.configbox)
         vbox.addWidget(self.ai_delay)
         vbox.addWidget(btn_toggle_resolution)
         vbox.addWidget(self.resolution)
@@ -263,6 +261,8 @@ class Menu(QWidget):
         self.setGeometry(300, 300, 300, 100)
         self.setWindowTitle("Menu")
         self.setWindowIcon(QIcon("green_block.png"))
+
+
 
         self.show()
     def vs_ai_mod(self):
@@ -285,13 +285,12 @@ class Menu(QWidget):
         self.mod = "3fill.mods"
         self.ai = "0"
         system("./tetroll.py" + self.option_str())
-    def set_config(self, text):
-        self.conf = text
     def option_str(self):
+        print(self.configbox.currentText())
         opt = ""
         optlist = [self.joy, int(self.resolution.fullscreen),
                     self.resolution.width, self.resolution.height,
-                    self.conf, self.mod, self.ai,
+                    self.configbox.currentText(), self.mod, self.ai,
                     self.ai_delay.currentText()]
         for i in optlist:
             opt += " "
