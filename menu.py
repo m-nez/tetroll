@@ -286,7 +286,6 @@ class Menu(QWidget):
         self.ai = "0"
         system("./tetroll.py" + self.option_str())
     def option_str(self):
-        print(self.configbox.currentText())
         opt = ""
         optlist = [self.joy, int(self.resolution.fullscreen),
                     self.resolution.width, self.resolution.height,
