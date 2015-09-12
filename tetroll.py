@@ -222,8 +222,10 @@ elif outcome1 == 2 or outcome2 == 1:
 
 if winner == 2:
     bo2.draw_win(win.screen)
+    bo.draw_level(win.screen)
 elif winner == 1:
     bo.draw_win(win.screen)
+    bo2.draw_level(win.screen)
 
 if winner != 0:
     pygame.display.flip()
