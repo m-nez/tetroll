@@ -20,7 +20,6 @@ class block:
     def __init__(self):
         self.sqares = []
         self.cur_sqares = [[0,0],[0,0],[0,0],[0,0]]
-        self.col_sqares = [[0,0],[0,0],[0,0],[0,0]]
 
         self.rotation = 0
         self.colour = 1
