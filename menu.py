@@ -246,6 +246,14 @@ class Menu(QWidget):
         btn_toggle_resolution.setToolTip("-set the game resolution")
         btn_toggle_resolution.clicked.connect(self.resolution)
 
+        self.multiplayer_ip = QLineEdit("", self)
+        self.multiplayer_ip.setToolTip("IP address of your opponent(Leave blank for singleplayer)")
+
+
+        self.multiplayer_initiate_box = QCheckBox("Initiate", self)
+        self.multiplayer_initiate_box.setTristate(False)
+        self.multiplayer_initiate_box.setChecked(True)
+
         vbox.addWidget(btn_pl_vs_pl)
         vbox.addWidget(btn_pl_vs_pl_mod)
         vbox.addWidget(btn_vs_ai)
@@ -257,12 +265,12 @@ class Menu(QWidget):
         vbox.addWidget(self.ai_delay)
         vbox.addWidget(btn_toggle_resolution)
         vbox.addWidget(self.resolution)
+        vbox.addWidget(self.multiplayer_ip)
+        vbox.addWidget(self.multiplayer_initiate_box)
 
         self.setGeometry(300, 300, 300, 100)
         self.setWindowTitle("Menu")
         self.setWindowIcon(QIcon("green_block.png"))
-
-
 
         self.show()
     def vs_ai_mod(self):
@@ -287,10 +295,15 @@ class Menu(QWidget):
         system("./tetroll.py" + self.option_str())
     def option_str(self):
         opt = ""
+        if self.multiplayer_ip.text() != "":
+            if self.multiplayer_initiate_box.isChecked():
+                self.ai = 4
+            else:
+                self.ai = 3
         optlist = [self.joy, int(self.resolution.fullscreen),
                     self.resolution.width, self.resolution.height,
                     self.configbox.currentText(), self.mod, self.ai,
-                    self.ai_delay.currentText()]
+                    self.ai_delay.currentText(), self.multiplayer_ip.text()]
         for i in optlist:
             opt += " "
             opt += str(i)

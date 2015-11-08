@@ -56,6 +56,10 @@ ai_delay = 1
 if len(argv) > 8:
     ai_delay = int(argv[8])
 
+opponent_ip = None
+if len(argv) > 9:
+    opponent_ip = argv[9]
+
 if size[0] == 0 or size[1] == 0:
     size = pygame.display.list_modes()[0]
 
@@ -83,8 +87,20 @@ if ai == "1":
 elif ai == "2":
     cfg = ConfigLoader(bo, bo2, configfile)
     cfg.actions = {}
+elif ai == "3" or ai == "4":
+    cfg = ConfigLoader(bo, bo, configfile)
+    if opponent_ip == None:
+        print("Opponent ip not specified")
+        exit(1)
+    if ai == "3":
+        bo2.add_send_connection(opponent_ip)
+    else:
+        bo2.add_wait_connection(opponent_ip)
+    bo.connection = bo2.connection
+    bo.send_multi = True
 else:
     cfg = ConfigLoader(bo, bo2, configfile)
+
 
 #Load mod settings
 mods = ModLoader(bo, bo2, modfile)
@@ -133,9 +149,11 @@ while(not done):
     #check if game_step
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
+            bo.set_forfeit(True)
             done = True
         elif event.type == pygame.KEYDOWN:
             if event.key == pygame.K_ESCAPE:
+                bo.set_forfeit(True)
                 done = True
             #Use config
             elif event.key in cfg.actions:
@@ -186,6 +204,11 @@ while(not done):
             bo.ai.move()
             bo2.ai.move()
             time_advanced_lately = False
+    elif ai == "3" or ai == "4":
+        # Networked player
+        bo.time_advance()
+        bo.send_state()
+        bo2.try_recreate_state()
     else:
         bo.time_advance()
         bo2.time_advance()

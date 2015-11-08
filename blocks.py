@@ -23,6 +23,7 @@ class block:
 
         self.rotation = 0
         self.colour = 1
+        self.identifier = 0
     def I(self):
         self.sqares = [
                 [[0, 0], [0, 1], [0, 2], [0, 3]],
@@ -30,6 +31,7 @@ class block:
         ]
         self.init_cur_sqares()
         self.colour = 1
+        self.identifier = 0
     def T(self):
         self.sqares = [
                 [[-1, 0], [0, 0], [1, 0], [0, 1]],
@@ -39,12 +41,14 @@ class block:
                 ]
         self.init_cur_sqares()
         self.colour = 1
+        self.identifier = 1
     def O(self):
         self.sqares = [
                 [[0,0], [1, 0], [0, 1], [1 , 1]]
                 ]
         self.init_cur_sqares()
         self.colour = 1
+        self.identifier = 2
     def S(self):
         self.sqares = [
                 [[-1, 0], [0, 0], [0, 1], [1, 1]],
@@ -52,6 +56,7 @@ class block:
                 ]
         self.init_cur_sqares()
         self.colour = 1
+        self.identifier = 3
     def Z(self):
         self.sqares = [
                 [[0, 0], [1, 0], [-1, 1], [0, 1]],
@@ -59,6 +64,7 @@ class block:
                 ]
         self.init_cur_sqares()
         self.colour = 1
+        self.identifier = 4
     def L(self):
         self.sqares = [
                 [[0, 0], [1, 0], [0, 1], [0, 2]],
@@ -68,6 +74,7 @@ class block:
                 ]
         self.init_cur_sqares()
         self.colour = 1
+        self.identifier = 5
     def J(self):
         self.sqares = [
                 [[0, 0], [1, 0], [1, 1], [1, 2]],
@@ -77,42 +84,49 @@ class block:
                 ]
         self.init_cur_sqares()
         self.colour = 1
+        self.identifier = 6
     def X(self):
         self.sqares = [
                 [[-1, 0], [1, 0], [0, 1], [-1, 2], [1,2]]
                 ]
         self.init_cur_sqares()
         self.colour = 2
+        self.identifier = 7
     def H(self):
         self.sqares = [
                 [[-1, 0], [1, 0], [0, 1], [-1, 2], [1,2], [-1,1], [1,1]]
                 ]
         self.init_cur_sqares()
         self.colour = 2
+        self.identifier = 8
     def U(self):
         self.sqares = [
                 [[0, 0], [-1, 2], [1,2], [-1,1], [1,1]]
                 ]
         self.init_cur_sqares()
         self.colour = 2
+        self.identifier = 9
     def Tbig(self):
         self.sqares = [
                 [[0, 0], [-1, 2], [1,2], [0,1], [0,2]]
                 ]
         self.init_cur_sqares()
         self.colour = 2
+        self.identifier = 10
     def t(self):
         self.sqares = [
                 [[0, 0], [-1, 1], [1,1], [0,1], [0,2]]
                 ]
         self.init_cur_sqares()
         self.colour = 2
+        self.identifier = 11
     def dot(self):
         self.sqares = [
                 [[0, 0]]
                 ]
         self.init_cur_sqares()
         self.colour = 1
+        self.identifier = 16
     def from_int(self, x):
         if x == 0:
             self.I();
@@ -141,8 +155,10 @@ class block:
         elif x == 16:
             self.dot()
     def rotate(self, r_amount):
-        self.rotation = (self.rotation + r_amount) % 4
-        self.cur_sqares = self.sqares[self.rotation % len(self.sqares)]
+        self.rotation = (self.rotation + r_amount) % len(self.sqares)
+        self.cur_sqares = self.sqares[self.rotation]
+    def current_sqares(self):
+        return self.sqares[self.rotation]
     def init_cur_sqares(self):
         self.cur_sqares = []
         for i in self.sqares[0]:

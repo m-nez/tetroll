@@ -28,6 +28,7 @@ import pygame
 from time import time
 from copy import deepcopy
 from tetai import AI
+from networking import Connection
 
 class board:
     def __init__(self):
@@ -38,14 +39,16 @@ class board:
         self.dot_spawn_troll = False
         self.reset_matrix()
         self.win_functions = [
-                self.win_func1
-                ]
+            self.win_func1
+            ]
         self.loss_functions = [
-                self.loss_func1
-                ]
+            self.loss_func1
+            ]
         self.win_conditions = [self.win_func1]
         self.loss_conditions = [self.loss_func1]
-        
+        self.forfeit = False
+        self.send_multi = False
+
         self.active_block = blocks.block()
         self.pos = [5, 20]
         self.end_count = 0
@@ -69,6 +72,8 @@ class board:
         self.defill_time_decrease = True
         self.troll_time_decrease = False
         self.troll_time_modifier = 1.0
+        self.troll_counter = 0 # Number of troll blocks spawned
+        self.troll_time_counter = 0 # Number of time decreases
 
         self.init_images(1)
 
@@ -77,14 +82,67 @@ class board:
 
         self.last_landed = [5, 0]
         self.ai = AI(self)
+    def send(self, b1, b2):
+        """
+        If multiplayer is enabled send two bytes to the other player.
+        First byte is an unsigned integer, second byte is a signed integer.
+        b1 <0, 255>
+        b2 <-128, 127>
+        If multiplayer is not enabled does nothing.
+        """
+
+        if self.send_multi:
+            self.connection.send([b1, b2 + 128])
+    def send_state(self):
+        """
+        Send elements necessary to recreate the board state.
+        """
+        msg = []
+        msg.append(self.level)
+        msg.append(self.width) # Height doesn't change
+        msg.append(self.active_block.identifier)
+        msg.append(self.active_block.rotation)
+        msg.append(self.active_block.colour)
+        msg.append(self.pos[0])
+        msg.append(self.pos[1])
+        msg.append(self.forfeit)
+        
+        for l in self.matrix:
+            msg.extend(l)
+        self.connection.send(msg)
+    def recreate_state(self, msg):
+        """
+        Recreate state from bytearry.
+        """
+        self.level = ord(msg[0]) # Python2 so msg is a string
+        prev_width = self.width
+        self.width = ord(msg[1])
+
+        self.active_block.from_int(ord(msg[2]))
+        self.active_block.rotation = ord(msg[3])
+        self.active_block.colour = ord(msg[4])
+        self.pos[0] = ord(msg[5])
+        self.pos[1] = ord(msg[6])
+        self.forfeit = ord(msg[7])
+        
+        j = 8
+        mat = []
+        for i in range(self.height):
+            mat.append([ord(j) for j in msg[8 + i * self.width : 8 + (i+1) * self.width]])
+        self.matrix = mat
+
+    def try_recreate_state(self):
+        msg = self.connection.receive()
+        if msg != 0:
+            self.recreate_state(msg)
     def print_matrix(self):
         print(10*"*")
-        self.add_block(self.pos, self.active_block.cur_sqares)
+        self.add_block(self.pos, self.active_block.current_sqares())
         for i in reversed(range(self.visible_height)):
             for j in range(self.width):
                 stdout.write(str(self.matrix[i][j]))
             print()
-        self.erase_block(self.pos, self.active_block.cur_sqares)
+        self.erase_block(self.pos, self.active_block.current_sqares())
     def reset_matrix(self):
         self.matrix = []
 
@@ -108,27 +166,33 @@ class board:
     def erase_block(self, pos, sqares):
         for sq in sqares:
             self.matrix[pos[1]+sq[1]][pos[0]+sq[0]] = 0
-    def spawn_block(self):
+    def spawn_block(self, seed=-1):
         self.pos = [5, 19]
-        if self.dot_meter > 0:
-            self.active_block.from_int(16)
-            self.dot_meter -= 1
-        elif self.troll_meter > 0:
-            self.spawn_troll_block()
-            self.troll_meter -= 1
+
+        if seed != -1:
+            self.active_block.from_int(seed)
         else:
-            self.active_block.from_int(randint(0,6))
-        if self.check_block(self.pos, self.active_block.cur_sqares):
+            if self.dot_meter > 0:
+                self.active_block.from_int(16)
+                self.dot_meter -= 1
+            elif self.troll_meter > 0:
+                self.spawn_troll_block()
+                self.troll_meter -= 1
+            else:
+                self.active_block.from_int(randint(0, 6))
+        if self.check_block(self.pos, self.active_block.current_sqares()):
             self.end()
     def spawn_troll_block(self):
+        self.troll_counter += 1
         if self.dot_spawn_troll:
             self.active_block.from_int(16)
         else:
-            self.active_block.from_int(randint(7,11))
+            self.active_block.from_int(randint(7, 11))
+
     def advance_turn(self):
-        if self.check_block([self.pos[0], self.pos[1] - 1], self.active_block.cur_sqares):
+        if self.check_block([self.pos[0], self.pos[1] - 1], self.active_block.current_sqares()):
             self.last_landed = list(self.pos)
-            self.add_block(self.pos, self.active_block.cur_sqares)
+            self.add_block(self.pos, self.active_block.current_sqares())
             self.defill()
             self.spawn_block()
             self.last_game_step = time()
@@ -137,10 +201,10 @@ class board:
             self.pos[1] -= 1
             return 0
     def dry_advance(self):
-        if self.check_block([self.pos[0], self.pos[1] - 1], self.active_block.cur_sqares):
-            self.add_block(self.pos, self.active_block.cur_sqares)
+        if self.check_block([self.pos[0], self.pos[1] - 1], self.active_block.current_sqares()):
+            self.add_block(self.pos, self.active_block.current_sqares())
             levels_cleared = self.dry_defill()
-            self.erase_block(self.pos, self.active_block.cur_sqares)
+            self.erase_block(self.pos, self.active_block.current_sqares())
             return [True, levels_cleared]
         else:
             self.pos[1] -= 1
@@ -152,13 +216,13 @@ class board:
         return counter
 
     def try_move(self, x):
-        if not self.check_block([self.pos[0] + x, self.pos[1]], self.active_block.cur_sqares):
+        if not self.check_block([self.pos[0] + x, self.pos[1]], self.active_block.current_sqares()):
             self.pos[0] += x
             return 1
         return 0
     def try_rotate(self, x):
         self.active_block.rotate(x)
-        if self.check_block(self.pos, self.active_block.cur_sqares):
+        if self.check_block(self.pos, self.active_block.current_sqares()):
             self.active_block.rotate(-x)
             return 0
         return 1
@@ -180,13 +244,15 @@ class board:
         for i in range(line + 1, self.height):
             self.matrix[i-1] = deepcopy(self.matrix[i])
     def advance_to_bottom(self):
-        while (not self.advance_turn()):
+        while not self.advance_turn():
             pass
     def draw(self, screen):
-        self.add_block(self.pos, self.active_block.cur_sqares)
+        self.add_block(self.pos, self.active_block.current_sqares())
         for i in range(self.visible_height):
             for j in range(self.width):
-                b_pos = (self.bo_pos[0] +self.block_image.get_width()*j,self.bo_pos[1] + self.block_image.get_height()*(self.visible_height - i))
+                b_pos = (
+                    self.bo_pos[0] + self.block_image.get_width() * j,
+                    self.bo_pos[1] + self.block_image.get_height() * (self.visible_height - i))
                 if self.matrix[i][j] == 1:
                     if i < self.level:
                         screen.blit(self.green_block_image, b_pos)
@@ -196,7 +262,7 @@ class board:
                     screen.blit(self.red_block_image, b_pos)
                 elif self.matrix[i][j] == 0:
                     screen.blit(self.gray_grid_image, b_pos)
-        self.erase_block(self.pos, self.active_block.cur_sqares)
+        self.erase_block(self.pos, self.active_block.current_sqares())
         #draw_border
         self.draw_border(screen)
         self.draw_end_count(screen)
@@ -205,14 +271,14 @@ class board:
 
     def draw_border(self, screen):
         for i in range(-1, self.width + 1):
-            b_pos = (self.bo_pos[0] +self.block_image.get_width()*i,self.bo_pos[1] + self.block_image.get_height()*(0))
+            b_pos = (self.bo_pos[0] + self.block_image.get_width()*i,self.bo_pos[1] + self.block_image.get_height()*(0))
             screen.blit(self.brown_block_image, b_pos)
-            b_pos = (self.bo_pos[0] +self.block_image.get_width()*i,self.bo_pos[1] + self.block_image.get_height()*(self.visible_height+1))
+            b_pos = (self.bo_pos[0] + self.block_image.get_width()*i,self.bo_pos[1] + self.block_image.get_height()*(self.visible_height+1))
             screen.blit(self.brown_block_image, b_pos)
         for i in range(self.visible_height+1):
             b_pos = (self.bo_pos[0] + self.block_image.get_width()*(-1),self.bo_pos[1] + self.block_image.get_height()*(i))
             screen.blit(self.brown_block_image, b_pos)
-            b_pos = (self.bo_pos[0] + self.block_image.get_width()*(self.width),self.bo_pos[1]+self.block_image.get_height()*(i))
+            b_pos = (self.bo_pos[0] + self.block_image.get_width()*(self.width),self.bo_pos[1] + self.block_image.get_height()*(i))
             screen.blit(self.brown_block_image, b_pos)
     def draw_matrix(self, screen, matrix, pos, image):
         for i in range(len(matrix)):
@@ -227,10 +293,10 @@ class board:
         self.draw_matrix(screen, self.end_count_matrix, pos, self.green_block_image)
     def draw_guidelines(self, screen):
             guide_pos = deepcopy(self.pos)
-            while not self.check_block(guide_pos, self.active_block.cur_sqares):
+            while not self.check_block(guide_pos, self.active_block.current_sqares()):
                 guide_pos[1] -= 1
             guide_pos[1] += 1
-            for sq in self.active_block.cur_sqares:
+            for sq in self.active_block.current_sqares():
                 b_pos = (self.bo_pos[0] +self.blue_guidelines_image.get_width()*(guide_pos[0]+sq[0]),self.bo_pos[1] + self.blue_guidelines_image.get_height()*(self.visible_height - (guide_pos[1]+sq[1])))
                 screen.blit(self.blue_guidelines_image, b_pos)
 
@@ -256,11 +322,11 @@ class board:
     def change_enemy_board(self, enemy_board):
         self.send_troll(enemy_board)
     def send_troll(self, enemy_board):
-        if self.troll_meter_to_send > 0:
-            enemy_board.troll_meter += self.troll_meter_to_send
-            self.troll_meter_to_send = 0
-        enemy_board.game_turn_time *= self.troll_time_modifier
-        self.troll_time_modifier = 1.0
+        enemy_board.troll_meter = self.level - enemy_board.troll_counter
+        if enemy_board.troll_time_decrease:
+            power = max(0, self.level - enemy_board.troll_time_counter)
+            enemy_board.game_turn_time *= self.turn_time_decrease**power
+            enemy_board.troll_time_counter += power
     def init_images(self, scale):
         pos = int(16 * scale)
         pos = (pos, pos)
@@ -399,6 +465,8 @@ class board:
         for loss_con in self.loss_conditions:
             if loss_con():
                 return 2
+        if self.forfeit:
+            return 2
         return 0
     def set_win_cons(self, func_str):
         self.win_conditions = []
@@ -413,3 +481,13 @@ class board:
     def set_game_cons(self, win_cons, loss_cons):
         self.set_win_cons(win_cons)
         self.set_loss_cons(loss_cons)
+    def set_forfeit(self, value):
+        self.forfeit = value
+    def set_level(self, level):
+        self.level = level
+    def add_troll(self, value):
+        self.troll_meter_to_send += value
+    def add_wait_connection(self, ip):
+        self.connection = Connection(self, ip, send=False)
+    def add_send_connection(self, ip):
+        self.connection = Connection(self, ip, send=True)
