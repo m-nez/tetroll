@@ -4,7 +4,8 @@ Block-placing trolling game for 2 players
 #Dependencies
 -python2  
 -python2-pyqt5  
--python2-pygame
+-python2-pygame  
+-miniupnp(Not necessary for offline play)
 
 #Running
 For a GUI.  
