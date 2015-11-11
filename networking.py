@@ -79,7 +79,10 @@ class Connection:
         """
         Takes a list of integers <0, 255> and sends them to the other end.
         """
-        self.client_socket.send(bytearray(ba))
+        to_send = len(ba)
+        sent = 0
+        while sent < to_send:
+            sent += self.client_socket.send(bytearray(ba[sent:]))
 
     def receive(self):
         """
