@@ -250,7 +250,7 @@ class Menu(QWidget):
         self.multiplayer_ip.setToolTip("IP address of your opponent(Leave blank for singleplayer)")
 
 
-        self.multiplayer_initiate_box = QCheckBox("Initiate", self)
+        self.multiplayer_initiate_box = QCheckBox("Host", self)
         self.multiplayer_initiate_box.setTristate(False)
         self.multiplayer_initiate_box.setChecked(True)
 

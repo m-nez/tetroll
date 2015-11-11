@@ -43,7 +43,6 @@ class Connection:
         end_term = [False]
         def term(end_term):
             while not end_term[0]:
-                print(end_term)
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
                         self.socket.shutdown(socket.SHUT_RDWR)

@@ -48,6 +48,7 @@ class board:
         self.loss_conditions = [self.loss_func1]
         self.forfeit = False
         self.send_multi = False
+        self.multi_msg = ""
 
         self.active_block = blocks.block()
         self.pos = [5, 20]
@@ -96,6 +97,7 @@ class board:
     def send_state(self):
         """
         Send elements necessary to recreate the board state.
+        Pcket should be 512 bytes.
         """
         msg = []
         msg.append(self.level)
@@ -109,11 +111,16 @@ class board:
         
         for l in self.matrix:
             msg.extend(l)
+        msg.extend([0]*(512-len(msg)))
+
         self.connection.send(msg)
     def recreate_state(self, msg):
         """
         Recreate state from bytearry.
         """
+        
+        if (len(msg) - 8) % self.height != 0:
+            print(msg)
         self.level = ord(msg[0]) # Python2 so msg is a string
         prev_width = self.width
         self.width = ord(msg[1])
@@ -125,16 +132,22 @@ class board:
         self.pos[1] = ord(msg[6])
         self.forfeit = ord(msg[7])
         
-        j = 8
         mat = []
         for i in range(self.height):
             mat.append([ord(j) for j in msg[8 + i * self.width : 8 + (i+1) * self.width]])
         self.matrix = mat
 
     def try_recreate_state(self):
+        """
+        Receive 512 bytes encoding the board state
+        """
         msg = self.connection.receive()
         if msg != 0:
-            self.recreate_state(msg)
+            self.multi_msg += msg
+            if len(msg) >= 512:
+                index = (len(msg) // 512 - 1) * 512
+                self.recreate_state(self.multi_msg[index:index+512])
+                self.multi_msg = self.multi_msg[index+512:]
     def print_matrix(self):
         print(10*"*")
         self.add_block(self.pos, self.active_block.current_sqares())
