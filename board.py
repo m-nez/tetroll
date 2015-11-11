@@ -29,6 +29,7 @@ from time import time
 from copy import deepcopy
 from tetai import AI
 from networking import Connection
+from strmat import str_to_matrix
 
 class board:
     def __init__(self):
@@ -131,7 +132,7 @@ class board:
         self.pos[0] = ord(msg[5])
         self.pos[1] = ord(msg[6])
         self.forfeit = ord(msg[7])
-        
+
         mat = []
         for i in range(self.height):
             mat.append([ord(j) for j in msg[8 + i * self.width : 8 + (i+1) * self.width]])
@@ -227,7 +228,6 @@ class board:
         for i in range(self.height):
             counter += self.matrix[i].count(0) == 0
         return counter
-
     def try_move(self, x):
         if not self.check_block([self.pos[0] + x, self.pos[1]], self.active_block.current_sqares()):
             self.pos[0] += x
@@ -312,7 +312,6 @@ class board:
             for sq in self.active_block.current_sqares():
                 b_pos = (self.bo_pos[0] +self.blue_guidelines_image.get_width()*(guide_pos[0]+sq[0]),self.bo_pos[1] + self.blue_guidelines_image.get_height()*(self.visible_height - (guide_pos[1]+sq[1])))
                 screen.blit(self.blue_guidelines_image, b_pos)
-
     def end(self):
         if self.matrix[self.visible_height-1].count(0) != self.width:
             self.end_count += 1
@@ -353,7 +352,6 @@ class board:
         self.blue_guidelines_image = pygame.transform.scale(pygame.image.load("images/blue_guidelines.png"), pos)
         self.gray_grid_image = pygame.transform.scale(pygame.image.load("images/gray_grid.png"), pos)
 
-
         self.scale = scale
     def draw_win(self, screen):
         win_mat = [
@@ -364,90 +362,7 @@ class board:
         pos = [self.bo_pos[0], self.bo_pos[1] + 16*(self.visible_height/2)*self.scale]
         self.draw_matrix(screen, win_mat, pos, self.blue_block_image)
     def draw_level(self, screen):
-        counter = str(self.level)
-        numbers = [
-                [
-                [0,1,1,0],
-                [1,0,0,1],
-                [1,0,0,1],
-                [1,0,0,1],
-                [0,1,1,0],
-                ],
-                [
-                [0,0,1,0],
-                [0,1,1,0],
-                [0,0,1,0],
-                [0,0,1,0],
-                [0,0,1,0],
-                ],
-
-                [
-                [0,1,1,0],
-                [1,0,0,1],
-                [0,0,1,0],
-                [0,1,0,0],
-                [1,1,1,1],
-                ],
-
-                [
-                [1,1,1,0],
-                [0,0,0,1],
-                [1,1,1,0],
-                [0,0,0,1],
-                [1,1,1,0],
-                ],
-
-                [
-                [1,0,1,0],
-                [1,0,1,0],
-                [1,1,1,1],
-                [0,0,1,0],
-                [0,0,1,0],
-                ],
-
-                [
-                [1,1,1,1],
-                [1,0,0,0],
-                [1,1,1,0],
-                [0,0,0,1],
-                [1,1,1,0],
-                ],
-                [
-                [0,0,1,0],
-                [0,1,0,0],
-                [1,1,1,0],
-                [1,0,0,1],
-                [0,1,1,0],
-                ],
-                [
-                [1,1,1,1],
-                [0,0,0,1],
-                [0,0,1,0],
-                [0,1,0,0],
-                [1,0,0,0],
-                ],
-                [
-                [0,1,1,0],
-                [1,0,0,1],
-                [0,1,1,0],
-                [1,0,0,1],
-                [0,1,1,0],
-                ],
-                [
-                [0,1,1,0],
-                [1,0,0,1],
-                [1,1,1,1],
-                [0,0,0,1],
-                [1,1,1,0],
-                ],
-                ]
-        mat = [[0],[0],[0],[0],[0]]
-        for i in counter:
-            i = int(i)
-            for n, j in enumerate(numbers[i]):
-                mat[n] += j + [0]
-
-
+        mat = str_to_matrix(str(self.level))
         pos = [self.bo_pos[0], self.bo_pos[1] + 16*(self.visible_height/2)*self.scale]
         self.draw_matrix(screen, mat, pos, self.blue_block_image)
     def sp_level_win(self):
@@ -477,6 +392,7 @@ class board:
                 return 1
         for loss_con in self.loss_conditions:
             if loss_con():
+                self.forfeit = True
                 return 2
         if self.forfeit:
             return 2

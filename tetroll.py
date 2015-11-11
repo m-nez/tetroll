@@ -27,6 +27,7 @@ import pygame
 from sys import argv
 from config_loader import ConfigLoader
 from mod_loader import ModLoader
+from strmat import str_to_matrix
 
 pygame.init()
 
@@ -95,6 +96,9 @@ elif ai == "3" or ai == "4":
     if ai == "3":
         bo2.add_send_connection(opponent_ip)
     else:
+        bo.draw_matrix(win.screen, str_to_matrix("please\nwait\nfor the\nsecond\nplayer"),
+                [1*16*scale, 1*16*scale], bo.purple_block_image)
+        pygame.display.flip()
         bo2.add_wait_connection(opponent_ip)
     bo.connection = bo2.connection
     bo.send_multi = True
@@ -207,7 +211,6 @@ while(not done):
     elif ai == "3" or ai == "4":
         # Networked player
         bo.time_advance()
-        bo.send_state()
         bo2.try_recreate_state()
     else:
         bo.time_advance()
@@ -218,6 +221,16 @@ while(not done):
 
     bo.end()
     bo2.end()
+
+    outcome1 = bo.outcome()
+    outcome2 = bo2.outcome()
+    if outcome1 or outcome2:
+        done = True
+
+
+    #Send state after all the calculation
+    if ai == "3" or ai == "4":
+        bo.send_state()
 
     curr_draw = time()
     draw_time_diff = curr_draw - last_draw
@@ -234,10 +247,7 @@ while(not done):
     else:
         sleep(draw_time_diff)
     
-    outcome1 = bo.outcome()
-    outcome2 = bo2.outcome()
-    if outcome1 or outcome2:
-        done = True
+
 if outcome1 == 1 or outcome2 == 2:
     winner = 1
 elif outcome1 == 2 or outcome2 == 1:

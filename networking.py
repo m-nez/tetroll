@@ -20,7 +20,7 @@ class Connection:
         self.ip = ip
         self.timeout = 0.005
 
-        if ip[:7] != "192.168" and ip != "localhost":
+        if ip[:7] != "192.168" and ip != "localhost" and ip != "LAN":
             self.auto_forward_port()
         if send:
             self.init_socket_send_request()

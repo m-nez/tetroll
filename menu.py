@@ -247,7 +247,7 @@ class Menu(QWidget):
         btn_toggle_resolution.clicked.connect(self.resolution)
 
         self.multiplayer_ip = QLineEdit("", self)
-        self.multiplayer_ip.setToolTip("IP address of your opponent(Leave blank for singleplayer)")
+        self.multiplayer_ip.setToolTip("IP address of your opponent(Leave blank for singleplayer)\nIf you are hosting enter LAN or INET")
 
 
         self.multiplayer_initiate_box = QCheckBox("Host", self)
