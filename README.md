@@ -5,7 +5,7 @@ Block-placing trolling game for 2 players
 -python2  
 -python2-pyqt5  
 -python2-pygame  
--miniupnp(Not necessary for offline play)
+-miniupnp(Not necessary for offline and LAN play)
 
 #Running
 For a GUI.  
