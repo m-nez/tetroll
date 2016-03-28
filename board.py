@@ -56,7 +56,6 @@ class board:
         self.end_count = 0
         self.end_count_pos = [20, 380]
         self.end_count_matrix = [[]]
-        self.levels_matrix = []
 
         self.last_game_step = time()
         self.curr_game_step = 0.0
@@ -247,7 +246,6 @@ class board:
                     self.game_turn_time += self.red_block_reward
                 self.bring_down(i)
                 self.level += 1
-                self.levels_matrix.append([1])
                 if self.defill_time_decrease:
                     self.game_turn_time *= self.turn_time_decrease
                 self.troll_meter_to_send += 1
