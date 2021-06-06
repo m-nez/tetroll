@@ -26,6 +26,7 @@ from PyQt5.QtWidgets import (QApplication, QWidget,
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtCore import QCoreApplication
 from os import system, listdir
+import pygame
 
 class Resolution(QWidget):
     """
@@ -103,12 +104,12 @@ class Controls(QWidget):
         self.actions = []
         self.conversion = {
                 65509:301,
-                65505:304,
+                65505:pygame.K_RSHIFT,
                 65507:306,
                 65513:308,
                 65027:313,
                 65508:305,
-                65506:303,
+                65506:pygame.K_LSHIFT,
                 65293:13,
                 65288:8,
                 65361:276,
