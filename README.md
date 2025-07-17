@@ -1,8 +1,11 @@
 # tetroll
 Block-placing trolling game for 2 players
+![Tetroll Gameplay](docs/assets/tetroll_gameplay.png)
 
 # Install dependencies
+```
 pip install requirements.txt
+```
 
 Optional dependencies:  
 - miniupnp(Not necessary for offline and LAN play)
